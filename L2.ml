@@ -5,6 +5,7 @@ type tipo =
   | TyBool
   | TyFn of tipo * tipo
   | TyPair of tipo * tipo 
+                (*| TyRef of tipo*)
   | TyUnit
               
 type ident = string
@@ -33,10 +34,10 @@ type expr  =
   | Let of ident * tipo * expr * expr
   | LetRec of ident * tipo * expr  * expr
                 (*| Asg of expr * expr
-                 | Dref of expr * expr
-                 | New of expr
-                 | Seq of expr * expr
-                 | Whl of expr * expr*)
+                 | Dref of expr * expr*)
+                (*| New of expr
+                      (Seq of expr * expr*)
+  | Whl of expr * expr
   | Skip
               
               
@@ -140,7 +141,12 @@ let rec typeinfer (gamma: amb) (e:expr) : tipo  =
   | LetRec _ -> raise BugParser 
                   
   | Skip -> TyUnit
-  
+    
+  | Whl(e1,e2) ->
+      let t1 = typeinfer gamma e1 in
+      let t2 = typeinfer gamma e2 in
+      if t1 = TyBool && t2 = TyUnit then TyUnit
+      else raise (TypeError "e1 esperava bool e e2 esperava unit")
 
 (* função auxiliar que convert tipo para string *)
 
