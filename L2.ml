@@ -14,10 +14,10 @@ type bop = Sum | Sub | Mult  | Gt | Lt | Geq | Leq | Eq
   
    
    (* e ::= n | x | b | e1 op e2 
-          | (e1,e2) | fst e | snd e
-          | if e1 then e2 else e3
-          | fn x:T => e | e1 e2 | let x:T = e1 in e2
-          | let rec f: T1--> T2 = fn x: T1 => e1 in e2 *)
+| (e1,e2) | fst e | snd e
+| if e1 then e2 else e3
+| fn x:T => e | e1 e2 | let x:T = e1 in e2
+                                      | let rec f: T1--> T2 = fn x: T1 => e1 in e2 *)
     
 type expr  = 
     Num of int  
@@ -34,7 +34,7 @@ type expr  =
   | Let of ident * tipo * expr * expr
   | LetRec of ident * tipo * expr  * expr
   | Asg of expr * expr
-                (*| Dref of expr * expr*)
+  | Dref of expr
   | New of expr
   | Seq of expr * expr
   | Whl of expr * expr
@@ -76,12 +76,12 @@ let rec typeinfer (gamma: amb) (e:expr) : tipo  =
   | False -> TyBool 
   
     (*  G |-- e1:int    G |-- e2:int     bop in {+,-,*}
-       ------------------------------------------------
-                 G |-- e1  bop  e2 : int 
+------------------------------------------------
+G |-- e1  bop  e2 : int 
                  
-       G |-- e1:int    G |-- e2:int     bop in {=, <, >, >=, <=,*}
-       ----------------------------------------------------------
-                 G |-- e1  bop  e2 : bool
+G |-- e1:int    G |-- e2:int     bop in {=, <, >, >=, <=,*}
+                                        ----------------------------------------------------------
+G |-- e1  bop  e2 : bool
                 
 *) 
     
@@ -136,7 +136,7 @@ let rec typeinfer (gamma: amb) (e:expr) : tipo  =
       else raise (TypeError "tipo da funcao diferente do tipo declarado" )
   
    (* se não colocarmos essa ultimo pattern teremos warning:
-      pattern matching non exhaustive *)  
+pattern matching non exhaustive *)  
 
   | LetRec _ -> raise BugParser 
                   
@@ -164,6 +164,12 @@ let rec typeinfer (gamma: amb) (e:expr) : tipo  =
            if t2 = t then TyUnit
            else raise (TypeError "o tipo T de T ref de e1 deve ser igual ao tipo T de e2")
        | _ -> raise (TypeError "e1 esperava tipo T ref"))
+      
+  | Dref (e1) -> 
+      ((match typeinfer gamma e1 with
+            TyRef(t) -> t
+          | _ -> raise (TypeError "e1 esperava tipo T ref")))
+      
   
       
 
@@ -207,12 +213,12 @@ let rec vtos (v:expr) : string = match v with
             
             
             (*let int_st (e:expr)  = 
-               try
-                 let t = typeinfer empty_gamma e in
-                 let v = evalst e  
-                 in  print_string ((vtos v) ^ " : " ^ (ttos t))
-               with 
-                 TypeError msg -> print_string ("erro de tipo: " ^ msg)
+try
+  let t = typeinfer empty_gamma e in
+let v = evalst e  
+in  print_string ((vtos v) ^ " : " ^ (ttos t))
+with 
+TypeError msg -> print_string ("erro de tipo: " ^ msg)
       
-               | BugParser -> print_string "corrigir bug no typeinfer"
-               | BugTypeInfer ->  print_string "corrigir bug do parser para let rec" *)
+| BugParser -> print_string "corrigir bug no typeinfer"
+| BugTypeInfer ->  print_string "corrigir bug do parser para let rec" *)
