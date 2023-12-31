@@ -17,7 +17,7 @@ type bop = Sum | Sub | Mult  | Gt | Lt | Geq | Leq | Eq
 | (e1,e2) | fst e | snd e
 | if e1 then e2 else e3
 | fn x:T => e | e1 e2 | let x:T = e1 in e2
-                                      | let rec f: T1--> T2 = fn x: T1 => e1 in e2 *)
+| let rec f: T1--> T2 = fn x: T1 => e1 in e2 *)
     
 type expr  = 
     Num of int  
@@ -80,7 +80,7 @@ let rec typeinfer (gamma: amb) (e:expr) : tipo  =
 G |-- e1  bop  e2 : int 
                  
 G |-- e1:int    G |-- e2:int     bop in {=, <, >, >=, <=,*}
-                                        ----------------------------------------------------------
+----------------------------------------------------------
 G |-- e1  bop  e2 : bool
                 
 *) 
@@ -210,13 +210,22 @@ let rec vtos (v:expr) : string = match v with
   | False -> "false" 
   | Fn _ -> "<fn>" 
   | _ ->  raise (Invalid_argument "not a vlue")
+            
+   
+(* Função auxiliar para imprimir mem*)        
+let rec mem_to_string mem =
+  match mem with
+  | [] -> ""
+  | (key, value) :: rest ->
+      key ^ ": " ^ (vtos value) ^ "\n" ^ mem_to_string rest
      
             
 let int_st (e:expr)  = 
   try
     let t = typeinfer empty_gamma e
-    (*let v = evalst e*)
-    in  print_string ("tipo: " ^ (ttos t))
+        (*(v, mem) = eval empty_gamma empty_gamma e*)
+    in  print_string ("tipo: " ^ (ttos t));
+    (*print_endline ("Memory:\n" ^ (mem_to_string mem))*)
   with 
     TypeError msg -> print_string ("erro de tipo: " ^ msg)
       
@@ -225,7 +234,7 @@ let int_st (e:expr)  =
             
             (*let int_st (e:expr)  = 
 try
-  let t = typeinfer empty_gamma e in
+let t = typeinfer empty_gamma e in
 let v = evalst e  
 in  print_string ((vtos v) ^ " : " ^ (ttos t))
 with 
