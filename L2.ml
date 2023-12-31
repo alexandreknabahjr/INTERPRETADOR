@@ -5,7 +5,7 @@ type tipo =
   | TyBool
   | TyFn of tipo * tipo
   | TyPair of tipo * tipo 
-                (*| TyRef of tipo*)
+  | TyRef of tipo
   | TyUnit
               
 type ident = string
@@ -35,10 +35,10 @@ type expr  =
   | LetRec of ident * tipo * expr  * expr
                 (*| Asg of expr * expr
                  | Dref of expr * expr*)
-                (*| New of expr *)
+  | New of expr
   | Seq of expr * expr
   | Whl of expr * expr
-  | Skip
+  | Skip 
               
               
 type amb = (ident * tipo) list 
@@ -153,6 +153,11 @@ let rec typeinfer (gamma: amb) (e:expr) : tipo  =
       let t2 = typeinfer gamma e2 in
       if t1 = TyUnit then t2
       else raise(TypeError "e1 esperava tipo unit")
+          
+  | New (e1) -> TyRef(typeinfer gamma e1)
+      
+      
+      
 
 (* função auxiliar que convert tipo para string *)
 
@@ -162,6 +167,7 @@ let rec ttos (t:tipo) : string =
   | TyBool -> "bool"
   | TyFn(t1,t2)   ->  "("  ^ (ttos t1) ^ " --> " ^ (ttos t2) ^ ")"
   | TyPair(t1,t2) ->  "("  ^ (ttos t1) ^ " * "   ^ (ttos t2) ^ ")" 
+  | TyRef t1 -> (ttos t1) ^ "ref"
   | TyUnit -> "unit"
    
                                                                                                     
