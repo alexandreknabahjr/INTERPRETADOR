@@ -181,7 +181,7 @@ let rec ttos (t:tipo) : string =
   | TyBool -> "bool"
   | TyFn(t1,t2)   ->  "("  ^ (ttos t1) ^ " --> " ^ (ttos t2) ^ ")"
   | TyPair(t1,t2) ->  "("  ^ (ttos t1) ^ " * "   ^ (ttos t2) ^ ")" 
-  | TyRef t1 -> (ttos t1) ^ "ref"
+  | TyRef t1 -> (ttos t1) ^ " ref"
   | TyUnit -> "unit"
    
                                                                                                     
