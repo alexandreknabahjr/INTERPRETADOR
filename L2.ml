@@ -210,7 +210,18 @@ let rec vtos (v:expr) : string = match v with
   | False -> "false" 
   | Fn _ -> "<fn>" 
   | _ ->  raise (Invalid_argument "not a vlue")
+     
             
+let int_st (e:expr)  = 
+  try
+    let t = typeinfer empty_gamma e
+    (*let v = evalst e*)
+    in  print_string ("tipo: " ^ (ttos t))
+  with 
+    TypeError msg -> print_string ("erro de tipo: " ^ msg)
+      
+  | BugParser -> print_string "corrigir bug no typeinfer"
+  | BugTypeInfer ->  print_string "corrigir bug do parser para let rec"      
             
             (*let int_st (e:expr)  = 
 try
