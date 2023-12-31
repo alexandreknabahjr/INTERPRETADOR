@@ -35,8 +35,8 @@ type expr  =
   | LetRec of ident * tipo * expr  * expr
                 (*| Asg of expr * expr
                  | Dref of expr * expr*)
-                (*| New of expr
-                      (Seq of expr * expr*)
+                (*| New of expr *)
+  | Seq of expr * expr
   | Whl of expr * expr
   | Skip
               
@@ -146,7 +146,13 @@ let rec typeinfer (gamma: amb) (e:expr) : tipo  =
       let t1 = typeinfer gamma e1 in
       let t2 = typeinfer gamma e2 in
       if t1 = TyBool && t2 = TyUnit then TyUnit
-      else raise (TypeError "e1 esperava bool e e2 esperava unit")
+      else raise (TypeError "e1 esperava tipo bool e e2 esperava tipo unit")
+          
+  | Seq(e1,e2) ->
+      let t1 = typeinfer gamma e1 in
+      let t2 = typeinfer gamma e2 in
+      if t1 = TyUnit then t2
+      else raise(TypeError "e1 esperava tipo unit")
 
 (* função auxiliar que convert tipo para string *)
 
