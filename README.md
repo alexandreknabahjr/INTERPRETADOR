@@ -6,7 +6,7 @@ Extensão da Linguagem L1 com instruções imperativas.
 
 - TypeInfer ⭕
   - Asg ✅ 
-  - Dref ❌
+  - Dref ✅
   - New ✅
   - Seq ✅
   - Whl ✅
