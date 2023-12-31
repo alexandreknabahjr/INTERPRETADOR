@@ -220,6 +220,10 @@ let rec avalia(amb:amb) (mem:mem) (e:expr): (valor * mem) =
   
   | Num n -> (NumV n, mem)
              
+  | True -> (TrueV, mem)
+            
+  | False -> (FalseV, mem)
+             
   |_ -> raise BugParser
   
            
@@ -248,11 +252,10 @@ let int_st (e:expr)  =
   try
     let t = typeinfer empty_gamma e in
     let (v, mem) = avalia empty_gamma empty_mem e
-    in  print_string ((vtos v) ^ " : " ^ (ttos t));
+    in  print_endline ((vtos v) ^ " : " ^ (ttos t));
     print_endline ("Memory:\n" ^ (mem_to_string mem))
   with 
-    TypeError msg -> print_string ("erro de tipo: " ^ msg)
-      
+    TypeError msg -> print_string ("erro de tipo: " ^ msg) 
   | BugParser -> print_string "corrigir bug no typeinfer"
   | BugTypeInfer ->  print_string "corrigir bug do parser para let rec"      
             
