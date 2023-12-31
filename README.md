@@ -4,7 +4,7 @@ Extensão da Linguagem L1 com instruções imperativas.
 
 ## Progresso
 
-- TypeInfer ⭕
+- TypeInfer ✅
   - Asg ✅ 
   - Dref ✅
   - New ✅
