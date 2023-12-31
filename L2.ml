@@ -33,8 +33,8 @@ type expr  =
   | App of expr * expr
   | Let of ident * tipo * expr * expr
   | LetRec of ident * tipo * expr  * expr
-                (*| Asg of expr * expr
-                 | Dref of expr * expr*)
+  | Asg of expr * expr
+                (*| Dref of expr * expr*)
   | New of expr
   | Seq of expr * expr
   | Whl of expr * expr
@@ -154,9 +154,17 @@ let rec typeinfer (gamma: amb) (e:expr) : tipo  =
       if t1 = TyUnit then t2
       else raise(TypeError "e1 esperava tipo unit")
           
-  | New (e1) -> TyRef(typeinfer gamma e1)
-      
-      
+  | New(e1) -> TyRef(typeinfer gamma e1)
+                  
+  | Asg(e1,e2) ->
+      let t1 = typeinfer gamma e1 in
+      let t2 = typeinfer gamma e2 in
+      (match t1 with
+         TyRef(t) ->
+           if t2 = t then TyUnit
+           else raise (TypeError "o tipo T de T ref de e1 deve ser igual ao tipo T de e2")
+       | _ -> raise (TypeError "e1 esperava tipo T ref"))
+  
       
 
 (* função auxiliar que convert tipo para string *)
