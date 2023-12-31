@@ -12,7 +12,6 @@ type ident = string
   
 type bop = Sum | Sub | Mult  | Gt | Lt | Geq | Leq | Eq
   
-   
    (* e ::= n | x | b | e1 op e2 
 | (e1,e2) | fst e | snd e
 | if e1 then e2 else e3
@@ -40,10 +39,22 @@ type expr  =
   | Whl of expr * expr
   | Skip 
               
-              
 type amb = (ident * tipo) list 
+  
+    
+type valor =
+  | NumV of int
+  | TrueV
+  | FalseV
+  | ClosV  of ident * expr * amb
+  | RclosV of ident * ident * expr * amb
+  | SkipV
+  | IdentV of ident
+    
+type mem = (ident * valor) list  
     
 let empty_gamma : amb = []
+  
     
 let rec lookup (gamma: amb) (x:ident) : tipo option = 
   match gamma with
@@ -53,6 +64,8 @@ let rec lookup (gamma: amb) (x:ident) : tipo option =
 let rec update (gamma: amb) (x:ident) (t:tipo) : amb = 
   (x,t) :: gamma
   
+  
+let empty_mem : mem = []
 
 (* TypeError é ativada se programador L1 escreveu expressão mal tipada *) 
 
@@ -190,26 +203,37 @@ let rec ttos (t:tipo) : string =
    (* ========================================= *) 
 exception  NoRuleApplies
   
-let compute(oper: bop) (v1: expr) (v2:expr) = match (oper,v1,v2) with
-    (Sum, Num(n1),  Num(n2)) -> Num(n1+n2) 
-  | (Sub, Num(n1),  Num(n2)) -> Num(n1-n2)
-  | (Mult, Num(n1), Num(n2)) -> Num(n1*n2)
-  | (Eq, Num(n1), Num(n2)) -> if (n1 = n2) then True else False
-  | (Gt, Num(n1), Num(n2)) -> if (n1 > n2) then True else False
-  | (Lt, Num(n1), Num(n2)) -> if (n1 < n2) then True else False
-  | (Geq, Num(n1), Num(n2)) -> if (n1 >= n2) then True else False
-  | (Leq, Num(n1), Num(n2)) -> if (n1 <= n2) then True else False
+let compute(oper: bop) (v1: valor) (v2:valor) = match (oper,v1,v2) with
+    (Sum, NumV(n1),  NumV(n2)) -> NumV(n1+n2) 
+  | (Sub, NumV(n1),  NumV(n2)) -> NumV(n1-n2)
+  | (Mult, NumV(n1), NumV(n2)) -> NumV(n1*n2)
+  | (Eq, NumV(n1), NumV(n2)) -> if (n1 = n2) then TrueV else FalseV
+  | (Gt, NumV(n1), NumV(n2)) -> if (n1 > n2) then TrueV else FalseV
+  | (Lt, NumV(n1), NumV(n2)) -> if (n1 < n2) then TrueV else FalseV
+  | (Geq, NumV(n1), NumV(n2)) -> if (n1 >= n2) then TrueV else FalseV
+  | (Leq, NumV(n1), NumV(n2)) -> if (n1 <= n2) then TrueV else FalseV
   | _ -> raise NoRuleApplies
+           
+           
+let rec avalia(amb:amb) (mem:mem) (e:expr): (valor * mem) =
+  match e with
+  
+  | Num n -> (NumV n, mem)
+             
+  |_ -> raise BugParser
   
            
 exception BugTypeInfer 
           
-let rec vtos (v:expr) : string = match v with
-    Num n1 -> string_of_int n1
-  | True -> "true"
-  | False -> "false" 
-  | Fn _ -> "<fn>" 
-  | _ ->  raise (Invalid_argument "not a vlue")
+let rec vtos (v:valor) : string = match v with
+    NumV n1 -> string_of_int n1
+  | TrueV -> "true"
+  | FalseV -> "false" 
+  | ClosV _ -> "<fn>"
+  | RclosV _ -> "<fn>"
+  | SkipV -> "skip"
+  | IdentV _ -> "ident"
+                  (*| _ ->  raise (Invalid_argument "not a vlue")*)
             
    
 (* Função auxiliar para imprimir mem*)        
@@ -222,10 +246,10 @@ let rec mem_to_string mem =
             
 let int_st (e:expr)  = 
   try
-    let t = typeinfer empty_gamma e
-        (*(v, mem) = eval empty_gamma empty_gamma e*)
-    in  print_string ("tipo: " ^ (ttos t));
-    (*print_endline ("Memory:\n" ^ (mem_to_string mem))*)
+    let t = typeinfer empty_gamma e in
+    let (v, mem) = avalia empty_gamma empty_mem e
+    in  print_string ((vtos v) ^ " : " ^ (ttos t));
+    print_endline ("Memory:\n" ^ (mem_to_string mem))
   with 
     TypeError msg -> print_string ("erro de tipo: " ^ msg)
       
