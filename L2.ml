@@ -4,7 +4,8 @@ type tipo =
     TyInt 
   | TyBool
   | TyFn of tipo * tipo
-  | TyPair of tipo * tipo
+  | TyPair of tipo * tipo 
+  | TyUnit
               
 type ident = string
   
@@ -31,6 +32,12 @@ type expr  =
   | App of expr * expr
   | Let of ident * tipo * expr * expr
   | LetRec of ident * tipo * expr  * expr
+                (*| Asg of expr * expr
+                 | Dref of expr * expr
+                 | New of expr
+                 | Seq of expr * expr
+                 | Whl of expr * expr*)
+  | Skip
               
               
 type amb = (ident * tipo) list 
@@ -131,6 +138,8 @@ let rec typeinfer (gamma: amb) (e:expr) : tipo  =
       pattern matching non exhaustive *)  
 
   | LetRec _ -> raise BugParser 
+                  
+  | Skip -> TyUnit
   
 
 (* função auxiliar que convert tipo para string *)
@@ -141,36 +150,12 @@ let rec ttos (t:tipo) : string =
   | TyBool -> "bool"
   | TyFn(t1,t2)   ->  "("  ^ (ttos t1) ^ " --> " ^ (ttos t2) ^ ")"
   | TyPair(t1,t2) ->  "("  ^ (ttos t1) ^ " * "   ^ (ttos t2) ^ ")" 
+  | TyUnit -> "unit"
    
                                                                                                     
    (* ========================================= *)
    (*    Avaliador                              *)
    (* ========================================= *) 
-    
-let rec subs (v:expr) (x:ident) (e:expr) : expr = 
-  let rec sb (e:expr)  = 
-    match e with
-      Num _ -> e
-    | True -> e
-    | False -> e
-      
-    | Binop(op,e1,e2) -> Binop(op, sb e1, sb e2)
-    | App(e1,e2) -> App(sb e1, sb e2)
-    | Pair(e1,e2) -> Pair(sb e1, sb e2)
-    | Fst(e1) -> Fst(sb e1)
-    | Snd(e1) -> Snd(sb e1)
-    | If(e1,e2,e3) -> If(sb e1,sb e2,sb e3)
-                        
-    | Fn(y,t,e1) -> if (x = y) then e else Fn(y,t,sb e1)
-    | Var y -> if (x = y) then v else e
-    | Let(y,t, e1, e2) -> 
-        Let(y,t, sb e1,if x = y then e2 else sb e2)
-    | LetRec(f,tf,ef,e2) -> 
-        if x = f then e 
-        else LetRec(f,tf, sb ef, sb e2)
-  in sb e
-    
-    
 exception  NoRuleApplies
   
 let compute(oper: bop) (v1: expr) (v2:expr) = match (oper,v1,v2) with
@@ -190,20 +175,18 @@ exception BugTypeInfer
 let rec vtos (v:expr) : string = match v with
     Num n1 -> string_of_int n1
   | True -> "true"
-  | False -> "false"
-  | Pair(v1,v2) when (isvalue v1) && (isvalue v2) ->
-      "(" ^ (vtos v1) ^ "," ^ (vtos v2) ^ ")"
-  | Fn _ -> "<fn>"
+  | False -> "false" 
+  | Fn _ -> "<fn>" 
   | _ ->  raise (Invalid_argument "not a vlue")
             
             
-let int_st (e:expr)  = 
-  try
-    let t = typeinfer empty_gamma e in
-    let v = evalst e  
-    in  print_string ((vtos v) ^ " : " ^ (ttos t))
-  with 
-    TypeError msg -> print_string ("erro de tipo: " ^ msg)
+            (*let int_st (e:expr)  = 
+               try
+                 let t = typeinfer empty_gamma e in
+                 let v = evalst e  
+                 in  print_string ((vtos v) ^ " : " ^ (ttos t))
+               with 
+                 TypeError msg -> print_string ("erro de tipo: " ^ msg)
       
-  | BugParser -> print_string "corrigir bug no typeinfer"
-  | BugTypeInfer ->  print_string "corrigir bug do parser para let rec" 
+               | BugParser -> print_string "corrigir bug no typeinfer"
+               | BugTypeInfer ->  print_string "corrigir bug do parser para let rec" *)
