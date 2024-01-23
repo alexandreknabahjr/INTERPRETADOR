@@ -22,8 +22,8 @@ Extensão da Linguagem L1 com instruções imperativas.
   - Skip ✅
 - Avaliador ⭕
   - Asg ❌ 
-  - Dref ❌
-  - New ❌
+  - Dref ✅
+  - New ✅
   - Seq ❌
   - Whl ❌
   - Skip ❌

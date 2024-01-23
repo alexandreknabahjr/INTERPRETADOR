@@ -46,22 +46,24 @@ type valor =
   | NumV of int
   | TrueV
   | FalseV
-  | ClosV  of ident * expr * amb
-  | RclosV of ident * ident * expr * amb
+  | ClosV  of ident * expr * bsamb
+  | RclosV of ident * ident * expr * bsamb
   | SkipV
   | IdentV of ident
+and
+  bsamb = (ident * valor) list
     
-type mem = (ident * valor) list  
+type mem = (int * valor) list  
     
 let empty_gamma : amb = []
   
     
-let rec lookup (gamma: amb) (x:ident) : tipo option = 
+let rec lookup gamma x = 
   match gamma with
     []          -> None
   | (y,t) :: tl -> if (y = x) then Some t else lookup tl x
   
-let rec update (gamma: amb) (x:ident) (t:tipo) : amb = 
+let rec update gamma x t = 
   (x,t) :: gamma
   
   
@@ -73,7 +75,24 @@ exception TypeError of string
                               
 (* BugParser ativada se parser deixou passar expressão c/ erro de sintaxe *)
 
-exception BugParser
+exception BugParser 
+  
+                                
+(* NotInMemory ativada se tenta acessar endereço que não está na memória *)
+
+exception NotInMemory
+  
+  
+  
+let find_max (mem: (int * valor) list) = 
+  let custom_max (n: int) (p: int * valor )= if n > fst(p) then n else fst(p) in
+  List.fold_left custom_max (-1) mem 
+    
+    
+let rec read_memory (mem: (int * valor) list) (v: int) : valor = 
+  match mem with
+    [] -> raise NotInMemory
+  | (address, value) :: xs -> if address = v then value else read_memory xs v
     
 let rec typeinfer (gamma: amb) (e:expr) : tipo  = 
   match e with
@@ -201,8 +220,7 @@ let rec ttos (t:tipo) : string =
    (* ========================================= *)
    (*    Avaliador                              *)
    (* ========================================= *) 
-exception  NoRuleApplies
-  
+exception  NoRuleApplies 
 let compute(oper: bop) (v1: valor) (v2:valor) = match (oper,v1,v2) with
     (Sum, NumV(n1),  NumV(n2)) -> NumV(n1+n2) 
   | (Sub, NumV(n1),  NumV(n2)) -> NumV(n1-n2)
@@ -215,16 +233,75 @@ let compute(oper: bop) (v1: valor) (v2:valor) = match (oper,v1,v2) with
   | _ -> raise NoRuleApplies
            
            
-let rec avalia(amb:amb) (mem:mem) (e:expr): (valor * mem) =
+let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
   match e with
   
   | Num n -> (NumV n, mem)
              
   | True -> (TrueV, mem)
             
-  | False -> (FalseV, mem)
+  | False -> (FalseV, mem) 
              
+  | Var x ->
+      (match lookup amb x with
+         Some v -> (v, mem)
+       | None -> raise BugParser)
+             
+  | Binop(bop, e1, e2) -> (
+      let v1, mem = avalia amb mem e1 in
+      let v2, mem = avalia amb mem e2 in
+      (compute bop v1 v2,mem)
+    ) 
+    
+  | If(e1, e2, e3) -> (
+      let (v1, mem) = avalia amb mem e1 in
+      let (v2, mem) = avalia amb mem e2 in
+      
+      match avalia amb mem e1 with
+        TrueV, mem  -> avalia amb mem e2     
+      | FalseV, mem -> avalia amb mem e3 
+      | _ -> raise BugParser
+    )
+    
+  | Fn(id, ty, ex) -> (ClosV(id,ex,amb),mem)
+                      
+  | Let(id, ty, e1, e2) -> 
+      let v1, mem = avalia amb mem e1 in 
+      avalia (update amb id v1) mem e2 
+                      
+  | App (e1, e2) ->(
+      let v1, _ = avalia amb mem e1 in
+      let v2, _ = avalia amb mem e2 in
+      match v1 with
+        ClosV(x,eb,amb') -> 
+          let amb'' = update amb' x v2 in
+          avalia amb'' mem eb
+              
+            
+      |RclosV(f,x,eb,amb') -> 
+          let amb'' = update amb' x v2 in
+          let amb''' = update amb'' f v1 in
+          avalia amb''' mem eb 
+      |_ -> raise BugParser)
+              
+  | New e -> (
+      let v1, mem = avalia amb mem e in 
+      match find_max mem with
+        (-1) -> (NumV 0), [(0,v1)]
+      | n -> (NumV (n+1)), (n+1, v1) :: mem )
+    
+  | Dref e -> 
+      let v1 = avalia amb mem e in 
+      let n = (match v1 with 
+            ((NumV x), mem) -> x
+          | _ -> raise BugParser) in
+      (read_memory mem n, mem)
+        
+      
+          
   |_ -> raise BugParser
+      
+      
   
            
 exception BugTypeInfer 
@@ -245,19 +322,22 @@ let rec mem_to_string mem =
   match mem with
   | [] -> ""
   | (key, value) :: rest ->
-      key ^ ": " ^ (vtos value) ^ "\n" ^ mem_to_string rest
+      string_of_int key ^ ": " ^ (vtos value) ^ "\n" ^ mem_to_string rest
      
             
 let int_st (e:expr)  = 
   try
     let t = typeinfer empty_gamma e in
-    let (v, mem) = avalia empty_gamma empty_mem e
+    let (v, mem) = avalia [] empty_mem e
     in  print_endline ((vtos v) ^ " : " ^ (ttos t));
     print_endline ("Memory:\n" ^ (mem_to_string mem))
   with 
     TypeError msg -> print_string ("erro de tipo: " ^ msg) 
   | BugParser -> print_string "corrigir bug no typeinfer"
-  | BugTypeInfer ->  print_string "corrigir bug do parser para let rec"      
+  | BugTypeInfer ->  print_string "corrigir bug do parser para let rec"   
+  
+
+(* ---------------------------- TESTES  ---------------------------- *) 
             
             (*let int_st (e:expr)  = 
 try
