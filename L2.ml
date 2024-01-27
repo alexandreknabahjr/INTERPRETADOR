@@ -242,8 +242,6 @@ let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
             
   | False -> (FalseV, mem) 
              
-  | Skip -> (SkipV, mem)
-             
   | Var x ->
       (match lookup amb x with
          Some v -> (v, mem)
@@ -298,8 +296,7 @@ let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
             ((NumV x), mem) -> x
           | _ -> raise BugParser) in
       (read_memory mem n, mem)
-  
-  | Whl(e1, e2) ->  avalia amb mem (If (e1, Seq(e2, Whl(e1, e2)), Skip)) 
+        
       
           
   |_ -> raise BugParser
@@ -337,7 +334,8 @@ let int_st (e:expr)  =
   with 
     TypeError msg -> print_string ("erro de tipo: " ^ msg) 
   | BugParser -> print_string "corrigir bug no typeinfer"
-  | BugTypeInfer ->  print_string "corrigir bug do parser para let rec" 
+  | BugTypeInfer ->  print_string "corrigir bug do parser para let rec"   
+  
 
 (* ---------------------------- TESTES  ---------------------------- *) 
             
