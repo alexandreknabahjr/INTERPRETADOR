@@ -310,6 +310,9 @@ let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
          SkipV -> avalia amb mem e2
        | _ -> raise BugTypeInfer)
       
+  | LetRec(f,TyFn(t1,t2),Fn(x,tx,e1), e2) when t1 = tx ->
+      let amb'= update amb f (RclosV(f,x,e1,amb))
+      in avalia amb' mem e2
           
   |_ -> raise BugParser
       
