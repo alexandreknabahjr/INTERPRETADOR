@@ -29,7 +29,7 @@ Extensão da Linguagem L1 com instruções imperativas.
   - If ✅
   - Fn ✅
   - Let ✅
-  - LetRec ❌
+  - LetRec ✅
   - App ✅
   - Asg ❌ 
   - Dref ✅
