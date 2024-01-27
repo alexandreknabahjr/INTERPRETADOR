@@ -220,6 +220,9 @@ let rec ttos (t:tipo) : string =
    (* ========================================= *)
    (*    Avaliador                              *)
    (* ========================================= *) 
+
+exception BugTypeInfer
+  
 exception  NoRuleApplies 
 let compute(oper: bop) (v1: valor) (v2:valor) = match (oper,v1,v2) with
     (Sum, NumV(n1),  NumV(n2)) -> NumV(n1+n2) 
@@ -300,15 +303,17 @@ let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
       (read_memory mem n, mem)
   
   | Whl(e1, e2) ->  avalia amb mem (If (e1, Seq(e2, Whl(e1, e2)), Skip)) 
+                      
+  | Seq(e1,e2) ->
+      let (v1, mem) = avalia amb mem e1 in
+      (match v1 with
+         SkipV -> avalia amb mem e2
+       | _ -> raise BugTypeInfer)
       
           
   |_ -> raise BugParser
       
-      
   
-           
-exception BugTypeInfer 
-          
 let rec vtos (v:valor) : string = match v with
     NumV n1 -> string_of_int n1
   | TrueV -> "true"
