@@ -34,6 +34,6 @@ Extensão da Linguagem L1 com instruções imperativas.
   - Asg ❌ 
   - Dref ✅
   - New ✅
-  - Seq ❌
+  - Seq ✅
   - Whl ✅
   - Skip ✅
