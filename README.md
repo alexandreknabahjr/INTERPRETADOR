@@ -21,10 +21,19 @@ Extensão da Linguagem L1 com instruções imperativas.
   - Whl ✅
   - Skip ✅
 - Avaliador ⭕
+  - Num ✅
+  - True ✅
+  - False ✅
+  - Var ✅
+  - Binop ✅
+  - If ✅
+  - Fn ✅
+  - Let ✅
+  - LetRec ❌
+  - App ✅
   - Asg ❌ 
   - Dref ✅
   - New ✅
   - Seq ❌
-  - Whl ❌
-  - Skip ❌
-
+  - Whl ✅
+  - Skip ✅
