@@ -187,6 +187,15 @@ pattern matching non exhaustive *)
       else raise(TypeError "e1 esperava tipo unit")
           
   | New(e1) -> TyRef(typeinfer gamma e1)
+                  
+  | Asg(e1,e2) ->
+      let t1 = typeinfer gamma e1 in
+      let t2 = typeinfer gamma e2 in
+      (match t1 with
+         TyRef(t) ->
+           if t2 = t then TyUnit
+           else raise (TypeError "o tipo T de T ref de e1 deve ser igual ao tipo T de e2")
+       | _ -> raise (TypeError "e1 esperava tipo T ref"))
       
   | Dref (e1) -> 
       ((match typeinfer gamma e1 with
@@ -308,17 +317,7 @@ let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
        | FalseV -> (SkipV, mem')
        | _ -> raise (TypeError "A condição do loop não é do tipo bool.")
       ) 
-
-  | Asg(e1, e2) ->
-    let v1, mem' = avalia amb mem e1 in
-    let v2, mem'' = avalia amb mem' e2 in
-    (match v1 with
-      | NumV(address) ->
-          let mem''' = atualiza_mem mem'' address v2 in
-          (SkipV, mem''')
-      | _ -> raise (TypeError "Erro: tentativa de atribuição em endereço não-inteiro da memória.")
-    )
-                      
+            
   | Seq(e1,e2) ->
       let (v1, mem) = avalia amb mem e1 in
       (match v1 with
@@ -348,7 +347,7 @@ let rec mem_to_string mem =
   match mem with
   | [] -> ""
   | (key, value) :: rest ->
-      string_of_int key ^ ": " ^ (vtos value) ^ "\n" ^ mem_to_string rest
+      "l" ^ string_of_int key ^ ": " ^ (vtos value) ^ "\n" ^mem_to_string rest
      
             
 let int_st (e:expr)  = 
@@ -356,7 +355,7 @@ let int_st (e:expr)  =
     let t = typeinfer empty_gamma e in
     let (v, mem) = avalia [] empty_mem e
     in  print_endline ((vtos v) ^ " : " ^ (ttos t));
-    print_endline ("Memory:\n" ^ (mem_to_string mem))
+    print_endline ("Memoria:\n" ^ (mem_to_string mem))
   with 
     TypeError msg -> print_string ("erro de tipo: " ^ msg) 
   | BugParser -> print_string "corrigir bug no typeinfer"
@@ -395,7 +394,7 @@ let counter1 = Let("counter", TyRef TyInt, New (Num 0),
                           Seq(Asg(Var "counter",Binop(Sum, Dref(Var "counter"), Num 1)),
                               Dref (Var "counter"))),
                        Binop(Sum, App (Var "next_val", Skip), 
-                                  App (Var "next_val", Skip))))
+                             App (Var "next_val", Skip))))
     
       
 let whilefat = Whl(Binop(Gt, Dref (Var "z"), Num 0), 
