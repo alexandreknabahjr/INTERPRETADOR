@@ -317,16 +317,6 @@ let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
        | FalseV -> (SkipV, mem')
        | _ -> raise (TypeError "A condição do loop não é do tipo bool.")
       ) 
-
-  | Asg(e1, e2) ->
-    let v1, mem' = avalia amb mem e1 in
-    let v2, mem'' = avalia amb mem' e2 in
-    (match v1 with
-      | NumV(address) ->
-          let mem''' = mem_set mem'' address v2 in
-          (SkipV, mem''')
-      | _ -> raise (TypeError "Erro: tentativa de atribuição em endereço não-inteiro da memória.")
-    )
                       
   | Seq(e1,e2) ->
       let (v1, mem) = avalia amb mem e1 in
