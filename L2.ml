@@ -187,15 +187,6 @@ pattern matching non exhaustive *)
       else raise(TypeError "e1 esperava tipo unit")
           
   | New(e1) -> TyRef(typeinfer gamma e1)
-                  
-  | Asg(e1,e2) ->
-      let t1 = typeinfer gamma e1 in
-      let t2 = typeinfer gamma e2 in
-      (match t1 with
-         TyRef(t) ->
-           if t2 = t then TyUnit
-           else raise (TypeError "o tipo T de T ref de e1 deve ser igual ao tipo T de e2")
-       | _ -> raise (TypeError "e1 esperava tipo T ref"))
       
   | Dref (e1) -> 
       ((match typeinfer gamma e1 with
@@ -236,11 +227,11 @@ let compute(oper: bop) (v1: valor) (v2:valor) = match (oper,v1,v2) with
   | _ -> raise NoRuleApplies
 
            
-let rec mem_set mem address value =
+let rec atualiza_mem mem address value =
   match mem with
   | [] -> raise NotInMemory
   | (addr, _) :: tl when addr = address -> (address, value) :: tl
-  | entry :: tl -> entry :: mem_set tl address value           
+  | entry :: tl -> entry :: atualiza_mem tl address value           
            
 let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
   match e with
@@ -317,6 +308,16 @@ let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
        | FalseV -> (SkipV, mem')
        | _ -> raise (TypeError "A condição do loop não é do tipo bool.")
       ) 
+
+  | Asg(e1, e2) ->
+    let v1, mem' = avalia amb mem e1 in
+    let v2, mem'' = avalia amb mem' e2 in
+    (match v1 with
+      | NumV(address) ->
+          let mem''' = atualiza_mem mem'' address v2 in
+          (SkipV, mem''')
+      | _ -> raise (TypeError "Erro: tentativa de atribuição em endereço não-inteiro da memória.")
+    )
                       
   | Seq(e1,e2) ->
       let (v1, mem) = avalia amb mem e1 in
