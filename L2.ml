@@ -234,7 +234,13 @@ let compute(oper: bop) (v1: valor) (v2:valor) = match (oper,v1,v2) with
   | (Geq, NumV(n1), NumV(n2)) -> if (n1 >= n2) then TrueV else FalseV
   | (Leq, NumV(n1), NumV(n2)) -> if (n1 <= n2) then TrueV else FalseV
   | _ -> raise NoRuleApplies
+
            
+let rec mem_set mem address value =
+  match mem with
+  | [] -> raise NotInMemory
+  | (addr, _) :: tl when addr = address -> (address, value) :: tl
+  | entry :: tl -> entry :: mem_set tl address value           
            
 let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
   match e with
@@ -302,7 +308,15 @@ let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
           | _ -> raise BugParser) in
       (read_memory mem n, mem)
   
-  | Whl(e1, e2) ->  avalia amb mem (If (e1, Seq(e2, Whl(e1, e2)), Skip)) 
+  | Whl(e1, e2) ->
+      let (v1, mem') = avalia amb mem e1 in
+      (match v1 with
+       | TrueV -> 
+           let (v2, mem'') = avalia amb mem' e2 in
+           avalia amb mem'' (Whl(e1, e2))
+       | FalseV -> (SkipV, mem')
+       | _ -> raise (TypeError "A condição do loop não é do tipo bool.")
+      ) 
                       
   | Seq(e1,e2) ->
       let (v1, mem) = avalia amb mem e1 in
@@ -346,6 +360,26 @@ let int_st (e:expr)  =
     TypeError msg -> print_string ("erro de tipo: " ^ msg) 
   | BugParser -> print_string "corrigir bug no typeinfer"
   | BugTypeInfer ->  print_string "corrigir bug do parser para let rec" 
+                       
+                       
+let whilefat = Whl(Binop(Gt, Dref (Var "z"), Num 0), 
+                   Seq( Asg(Var "y", Binop(Mult, Dref (Var "y"), Dref (Var "z"))), 
+                        Asg(Var "z", Binop(Sub,  Dref (Var "z"), Num 1)))                       
+                  ) 
+                               
+                             
+let bodyfat = Let("z", 
+                  TyRef TyInt, 
+                  New (Var "x"),
+                  Let("y", 
+                      TyRef TyInt, 
+                      New (Num 1), 
+                      Seq (whilefat, Dref (Var "y"))))
+    
+let impfat = Let("fat", 
+                 TyFn(TyInt,TyInt), 
+                 Fn("x", TyInt, bodyfat), 
+                 App(Var "fat", Num 5))
 
 (* ---------------------------- TESTES  ---------------------------- *) 
             
