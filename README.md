@@ -20,7 +20,7 @@ Extensão da Linguagem L1 com instruções imperativas.
   - Seq ✅
   - Whl ✅
   - Skip ✅
-- Avaliador ⭕
+- Avaliador ✅
   - Num ✅
   - True ✅
   - False ✅
@@ -31,7 +31,7 @@ Extensão da Linguagem L1 com instruções imperativas.
   - Let ✅
   - LetRec ✅
   - App ✅
-  - Asg ❌ 
+  - Asg ✅ 
   - Dref ✅
   - New ✅
   - Seq ✅
