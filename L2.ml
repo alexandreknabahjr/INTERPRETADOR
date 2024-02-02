@@ -1,3 +1,5 @@
+(* Alexandre Bartolo Knabah Junior | Gabriel Antonio Pereira |  Raissa Bitencourt Borowski *)
+
 (*  T ::= int | bool | T1 --> T2 |  T1 * T2  *)
 
 type tipo = 
