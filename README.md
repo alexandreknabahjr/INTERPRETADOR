@@ -2,14 +2,21 @@
 
 Extensão da Linguagem L1 com instruções imperativas.
 
-## Sugestões de testes para o TypeInfer:
+## Testes para o TypeInfer:
 
-- Asg: int_st (Asg(New(If(True, Num 10, Num 20)), Num 10)) deve imprimir unit ✅
-- Dref: int_st (Dref(New(If(True, Num 10, Num 20)))) deve imprimir int ✅
-- New: int_st (New(If(True, Num 10, Num 20))) deve imprimir int ref ✅
-- Seq: int_st (Seq(Skip, If(True, Num 10, Num 20))) deve imprimir int ✅
-- Whl: int_st (Whl(True, Skip)) deve imprimir unit ✅
-- Skip: int_st Skip deve imprimir unit ✅
+- Asg: teste_typeinfer (Asg(New(If(True, Num 10, Num 20)), Num 10)) deve imprimir unit ✅
+- Dref: teste_typeinfer (Dref(New(If(True, Num 10, Num 20)))) deve imprimir int ✅
+- New: teste_typeinfer (New(If(True, Num 10, Num 20))) deve imprimir int ref ✅
+- Seq: teste_typeinfer (Seq(Skip, If(True, Num 10, Num 20))) deve imprimir int ✅
+- Whl: teste_typeinfer (Whl(True, Skip)) deve imprimir unit ✅
+- Skip: teste_typeinfer Skip deve imprimir unit ✅
+
+## Testes para o Intepretador:
+
+- int_st (teste1) deve imprimir valor = 7 e memória 4 em l0 ✅
+- int_st (teste2) deve imprimir valor = 1 e memória 1 em l0 ✅
+- int_st (counter1) deve imprimir valor = 3 e memória 2 em l0 ✅
+- int_st (impfat) deve imprimir valor = 120, memória 0 em l0 e memória 120 em l1✅
 
 ## Progresso
 

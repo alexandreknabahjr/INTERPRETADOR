@@ -358,8 +358,8 @@ let rec mem_to_string mem =
   | [] -> ""
   | (key, value) :: rest ->
       "l" ^ string_of_int key ^ ": " ^ (vtos value) ^ "\n" ^mem_to_string rest
-     
-            
+  
+        
 let int_st (e:expr)  = 
   try
     let t = typeinfer empty_gamma e in
@@ -370,10 +370,39 @@ let int_st (e:expr)  =
     TypeError msg -> print_string ("erro de tipo: " ^ msg) 
   | BugParser -> print_string "corrigir bug no typeinfer"
   | BugTypeInfer ->  print_string "corrigir bug do parser para let rec" 
-                       
-
-(* ---------------------------- TESTES  ---------------------------- *) 
   
+(* ---------------------------- TESTES DO TYPEINFER ---------------------------- *) 
+
+                (* Devemos chamar  teste_typeinfer (testetypeinfer#) *)
+
+
+let teste_typeinfer (e:expr) =
+  
+  try let tipo = typeinfer empty_gamma e in  
+    print_endline ("tipo " ^ (ttos tipo));
+  with
+    TypeError msg -> print_string ("erro de tipo: " ^ msg) 
+  | BugParser -> print_string "corrigir bug no typeinfer"
+  | BugTypeInfer ->  print_string "corrigir bug do parser para let rec" 
+
+let testetypeinfer1 = Asg(New(If(True, Num 10, Num 20)), Num 10) (* Deve imprimir unit *)
+    
+let testetypeinfer2 = Dref(New(If(True, Num 10, Num 20))) (* Deve imprimir int *)
+                                                          
+let testetypeinfer3 = New(If(True, Num 10, Num 20)) (* Deve imprimir int ref *)
+                                                    
+let testetypeinfer4 = Seq(Skip, If(True, Num 10, Num 20)) (* Deve imprimir int *)
+                                                          
+let testetypeinfer5 = Whl(True, Skip) (* Deve imprimir unit *) 
+                                      
+let testetypeinfer6 = Skip (* Deve imprimir unit *)
+  
+
+(* ---------------------------- TESTES DO INTERPRETADOR (AVALIDOR + TYPEINFER) ---------------------------- *) 
+
+                (* Devemos chamar  int_st (teste) *)
+  
+
 let teste1 = Let("x", TyRef TyInt, New (Num 3),
                  Let("y", TyInt, Dref (Var "x"), 
                      Seq(Asg(Var "x", Binop(Sum, Dref(Var "x"), Num 1)), 
