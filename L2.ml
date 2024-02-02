@@ -317,7 +317,7 @@ let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
        | FalseV -> (SkipV, mem')
        | _ -> raise (TypeError "A condição do loop não é do tipo bool.")
       ) 
-      
+
   | Asg(e1, e2) ->
       let v1, mem' = avalia amb mem e1 in
       let v2, mem'' = avalia amb mem' e2 in
@@ -364,7 +364,7 @@ let int_st (e:expr)  =
   try
     let t = typeinfer empty_gamma e in
     let (v, mem) = avalia [] empty_mem e
-    in  print_endline ((vtos v) ^ " : " ^ (ttos t));
+    in  print_endline ("valor = " ^ (vtos v) ^ " : tipo " ^ (ttos t));
     print_endline ("Memoria:\n" ^ (mem_to_string mem))
   with 
     TypeError msg -> print_string ("erro de tipo: " ^ msg) 
