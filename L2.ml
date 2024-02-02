@@ -373,19 +373,7 @@ let int_st (e:expr)  =
                        
 
 (* ---------------------------- TESTES  ---------------------------- *) 
-            
-            (*let int_st (e:expr)  = 
-try
-let t = typeinfer empty_gamma e in
-let v = evalst e  
-in  print_string ((vtos v) ^ " : " ^ (ttos t))
-with 
-TypeError msg -> print_string ("erro de tipo: " ^ msg)
-      
-| BugParser -> print_string "corrigir bug no typeinfer"
-| BugTypeInfer ->  print_string "corrigir bug do parser para let rec" *)
-
-
+  
 let teste1 = Let("x", TyRef TyInt, New (Num 3),
                  Let("y", TyInt, Dref (Var "x"), 
                      Seq(Asg(Var "x", Binop(Sum, Dref(Var "x"), Num 1)), 
