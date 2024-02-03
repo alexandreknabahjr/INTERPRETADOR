@@ -13,10 +13,10 @@ Extensão da Linguagem L1 com instruções imperativas.
 
 ## Testes para o Intepretador:
 
-- int_st (teste1) deve imprimir valor = 7 e memória 4 em l0 ✅
-- int_st (teste2) deve imprimir valor = 1 e memória 1 em l0 ✅
-- int_st (counter1) deve imprimir valor = 3 e memória 2 em l0 ✅
-- int_st (impfat) deve imprimir valor = 120, memória 0 em l0 e memória 120 em l1✅
+- int_bse (teste1) deve imprimir valor = 7 e memória 4 em l0 ✅
+- int_bse (teste2) deve imprimir valor = 1 e memória 1 em l0 ✅
+- int_bse (counter1) deve imprimir valor = 3 e memória 2 em l0 ✅
+- int_bse (impfat) deve imprimir valor = 120, memória 0 em l0 e memória 120 em l1✅
 
 ## Progresso
 

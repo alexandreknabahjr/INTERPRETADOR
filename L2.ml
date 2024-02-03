@@ -362,7 +362,7 @@ let rec mem_to_string mem =
       "l" ^ string_of_int key ^ ": " ^ (vtos value) ^ "\n" ^mem_to_string rest
   
         
-let int_st (e:expr)  = 
+let int_bse (e:expr)  = 
   try
     let t = typeinfer empty_gamma e in
     let (v, mem) = avalia [] empty_mem e
@@ -402,7 +402,7 @@ let testetypeinfer6 = Skip (* Deve imprimir unit *)
 
 (* ---------------------------- TESTES DO INTERPRETADOR (AVALIDOR + TYPEINFER) ---------------------------- *) 
 
-                (* Devemos chamar  int_st (teste) *)
+                (* Devemos chamar  int_bse (teste) *)
   
 
 let teste1 = Let("x", TyRef TyInt, New (Num 3),
