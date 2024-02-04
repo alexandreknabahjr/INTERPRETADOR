@@ -36,7 +36,7 @@ type expr  =
   | LetRec of ident * tipo * expr  * expr
   | Asg of expr * expr
   | Dref of expr
-  | New of expr
+  | New of expr 
   | Seq of expr * expr
   | Whl of expr * expr
   | Skip 
@@ -45,7 +45,8 @@ type amb = (ident * tipo) list
   
     
 type valor =
-  | NumV of int
+  | NumV of int 
+  | AddrV of int
   | TrueV
   | FalseV
   | ClosV  of ident * expr * bsamb
@@ -254,6 +255,7 @@ let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
   | False -> (FalseV, mem) 
              
   | Skip -> (SkipV, mem)
+  
              
   | Var x ->
       (match lookup amb x with
@@ -300,13 +302,13 @@ let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
   | New e -> (
       let v1, mem = avalia amb mem e in 
       match find_max mem with
-        (-1) -> (NumV 0), [(0,v1)]
-      | n -> (NumV (n+1)), (n+1, v1) :: mem )
+        (-1) -> (AddrV 0), [(0,v1)]
+      | n -> (AddrV (n+1)), (n+1, v1) :: mem )
     
   | Dref e -> 
       let v1 = avalia amb mem e in 
       let n = (match v1 with 
-            ((NumV x), mem) -> x
+            ((AddrV x), mem) -> x
           | _ -> raise BugParser) in
       (read_memory mem n, mem)
   
@@ -324,7 +326,7 @@ let rec avalia(amb:bsamb) (mem:mem) (e:expr): (valor * mem) =
       let v1, mem' = avalia amb mem e1 in
       let v2, mem'' = avalia amb mem' e2 in
       (match v1 with
-       | NumV(address) ->
+       | AddrV (address) ->
            let mem''' = atualiza_mem mem'' address v2 in
            (SkipV, mem''')
        | _ -> raise (TypeError "Erro: tentativa de atribuição em endereço não-inteiro da memória.")
@@ -351,6 +353,7 @@ let rec vtos (v:valor) : string = match v with
   | RclosV _ -> "<fn>"
   | SkipV -> "skip"
   | IdentV _ -> "ident"
+  | AddrV _ -> "addr"
                   (*| _ ->  raise (Invalid_argument "not a vlue")*)
             
    
