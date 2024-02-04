@@ -1,0 +1,39 @@
+a) Teste read_memory:
+
+let create_memory_example () =
+  [(0, NumV 42); (1, TrueV); (2, FalseV); (3, ClosV ("x", Num 10, []))]
+let mem_example = create_memory_example ()
+let value_at_0 = read_memory mem_example 1
+
+
+b) Teste Dref:
+
+let deref_test =
+  Let("x", TyRef TyInt, New(Num 42),
+      Dref(Var "x")
+     )
+
+
+c) Teste atualiza_mem:
+
+let memoria_inicial = [(0, NumV 42); (1, NumV 17); (2, NumV 99)]
+let memoria_atualizada = atualiza_mem initial_memory 1 (NumV 50)
+print_endline(mem_to_string(memoria_atualizada))
+
+
+d) Teste find_max:
+
+let memoria_inicial = [(0, NumV 42); (1, NumV 17); (2, NumV 99)]
+find_max (memoria_inicial)
+
+
+e) Teste New:
+
+let new_expr = New (Num 42)
+let (result_new, mem_after_new) = avalia [] empty_mem new_expr
+
+
+f) Teste avalia:
+
+let expr1 = Binop(Sum, Num 10, Num 20)
+let (result1, mem1) = avalia [] empty_mem expr1
